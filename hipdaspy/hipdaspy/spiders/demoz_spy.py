@@ -13,10 +13,7 @@ import re
 class DmozSpider(CrawlSpider):
     name = "hipdaspy"
     # allowed_domains = ["dmoz.org"]
-    start_urls = [
-        "https://www.hi-pda.com/forum/forumdisplay.php?fid=2",
-        "https://www.hi-pda.com/forum/forumdisplay.php?fid=2&page=2"
-    ]
+    start_urls = []
 
     rules = (
 
@@ -24,7 +21,13 @@ class DmozSpider(CrawlSpider):
         Rule(LinkExtractor(allow=(r'http://www.hi-pda.com/forum/viewthread.php?tid=\d+')), callback='parse_item'),
     )
 
+    def __init__(self, *a, **kw):
+        super(DmozSpider, self).__init__(*a, **kw)
+        url="https://www.hi-pda.com/forum/forumdisplay.php?fid=2&page="
+        for i in range(100):
+            self.start_urls.append(url+str(i))
 
+        print "scrapylen:"+str(len(self.start_urls))
 
 
 
@@ -60,7 +63,8 @@ class DmozSpider(CrawlSpider):
         for sel in selList:
             author=sel.xpath('tr')[0].xpath('td/div/a/text()').extract()[0]
             date=sel.xpath('tr')[0].xpath('td//div[@class="authorinfo"]/em/text()').extract()[0]
-            content=sel.xpath('tr')[0].xpath('td//div[@class="defaultpost"]//td/text()').extract()[0]
+            #content=sel.xpath('tr')[0].xpath('td//div[@class="defaultpost"]//td/text()').extract()[0]
+            content = sel.xpath('tr')[0].xpath('td[@class="postcontent"]').extract()[0]
 
             item=replyItem()
             item['author']=author
@@ -72,7 +76,6 @@ class DmozSpider(CrawlSpider):
         pageNum=Selector(response).xpath('//a[@class="next"]')
         nextPageLink=0
         if(len(pageNum)!=0):
-            print len(pageNum)
             link=pageNum[0].xpath("@href").extract()[0]
             base_url = get_base_url(response)
             nextPageLink=urljoin_rfc(base_url,link)
@@ -152,3 +155,8 @@ class DmozSpider(CrawlSpider):
         res=re.findall("[^\?&]?" + parmName + "=[^&]+",str)
         if(len(res)!=0):
             return res[0].split("=")[1]
+
+
+    #TODO add div content judge
+    def get_div_content(self):
+        pass

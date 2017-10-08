@@ -48,4 +48,11 @@ class HipdaspyPipeline(object):
 
         elif isinstance(item,replyItem):
             print "reply:"+item['tid']
+            sql="insert into reply_list (author,postTime,content,tid) VALUES  (%s,%s,%s,%s)"
+            cur=self.conn.cursor()
+            param_map=(item['author'],item['postTime'],item['content'],item['tid'])
+            cur.execute(sql,param_map)
+            self.conn.commit()
+
+
 
