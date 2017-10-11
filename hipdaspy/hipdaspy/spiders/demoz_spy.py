@@ -9,6 +9,9 @@ from ..items import HipdaspyItem, replyItem
 from scrapy.utils.response import *
 from scrapy.utils.url import *
 import re
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 class DmozSpider(CrawlSpider):
     name = "hipdaspy"
@@ -24,7 +27,7 @@ class DmozSpider(CrawlSpider):
     def __init__(self, *a, **kw):
         super(DmozSpider, self).__init__(*a, **kw)
         url="https://www.hi-pda.com/forum/forumdisplay.php?fid=2&page="
-        for i in range(100):
+        for i in range(1):
             self.start_urls.append(url+str(i))
 
         print "scrapylen:"+str(len(self.start_urls))
@@ -58,19 +61,23 @@ class DmozSpider(CrawlSpider):
 
 
     def parsePostContent(self,response):
-        selList=Selector(response).xpath('//table[starts-with(@id,"pid")]')
+        selList=Selector(response).xpath('//table[starts-with(@id,"pi")]')
         contentList=[]
         for sel in selList:
             author=sel.xpath('tr')[0].xpath('td/div/a/text()').extract()[0]
             date=sel.xpath('tr')[0].xpath('td//div[@class="authorinfo"]/em/text()').extract()[0]
             #content=sel.xpath('tr')[0].xpath('td//div[@class="defaultpost"]//td/text()').extract()[0]
-            content = sel.xpath('tr')[0].xpath('td[@class="postcontent"]').extract()[0]
+            contentArr = sel.xpath('tr')[0].xpath('.//td[@class="t_msgfont"]/text()').extract()
+            content=""
+            content = content.join(contentArr)
+            floor_number=sel.xpath('.//td[@class="postcontent"]//div[@class="postinfo"]//a[@title]//em/text()').extract()[0]
 
             item=replyItem()
             item['author']=author
-            item['postTime']=date
+            item['postTime']=date.replace("发表于","").strip()
             item['content']=content
             item['tid']=self.getUrlParm("tid",get_base_url(response))
+            item['floor_number']=floor_number
             contentList.append(item)
 
         pageNum=Selector(response).xpath('//a[@class="next"]')
