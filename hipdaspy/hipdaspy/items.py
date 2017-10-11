@@ -25,6 +25,7 @@ class replyItem(scrapy.Item):
     postTime=scrapy.Field()
     content=scrapy.Field()
     tid=scrapy.Field()
+    floor_number=scrapy.Field()
     pass
 
 
