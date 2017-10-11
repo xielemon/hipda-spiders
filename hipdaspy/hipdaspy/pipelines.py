@@ -18,10 +18,11 @@ class HipdaspyPipeline(object):
         'user': 'root',
         'password': 'root',
         'port': 3306,
-        'database': 'hipda',
+        'database': 'hipda2',
         'charset': 'utf8'
     }
     conn=0
+    reply_list=[]
 
 
     def __init__(self):
@@ -35,7 +36,6 @@ class HipdaspyPipeline(object):
     def process_item(self, item, spider):
 
         if isinstance(item,HipdaspyItem):
-            print item['tid']+":"+item['title']
             try:
                 cur=self.conn.cursor()
                 sql="insert into post_list (title,author,postTime,link,tid) VALUES (%s,%s,%s,%s,%s)"
@@ -47,12 +47,21 @@ class HipdaspyPipeline(object):
                 print('insert datas error!{}'.format(e))
 
         elif isinstance(item,replyItem):
-            print "reply:"+item['tid']
-            sql="insert into reply_list (author,postTime,content,tid) VALUES  (%s,%s,%s,%s)"
-            cur=self.conn.cursor()
-            param_map=(item['author'],item['postTime'],item['content'],item['tid'])
-            cur.execute(sql,param_map)
-            self.conn.commit()
+            self.reply_list.append((item['author'],item['postTime'],item['content'],item['tid'],item['floor_number']))
+            if(len(self.reply_list)>1000):
+                self.batch_insert_reply()
+                self.reply_list=[]
 
 
+
+    def close_spider(self,spider):
+        self.batch_insert_reply()
+
+
+
+    def batch_insert_reply(self):
+        sql="insert into reply_list (author,postTime,content,tid,floor_number) VALUES  (%s,%s,%s,%s,%s)"
+        cur=self.conn.cursor()
+        cur.executemany(sql,self.reply_list)
+        self.conn.commit()
 
