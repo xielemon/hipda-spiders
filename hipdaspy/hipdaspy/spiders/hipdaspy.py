@@ -27,7 +27,7 @@ class DmozSpider(CrawlSpider):
     def __init__(self, *a, **kw):
         super(DmozSpider, self).__init__(*a, **kw)
         url="https://www.hi-pda.com/forum/forumdisplay.php?fid=2&page="
-        for i in range(1):
+        for i in range(500):
             self.start_urls.append(url+str(i))
 
         print "scrapylen:"+str(len(self.start_urls))
