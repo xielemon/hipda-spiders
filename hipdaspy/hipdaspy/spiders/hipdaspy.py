@@ -45,7 +45,7 @@ class DmozSpider(CrawlSpider):
             for i in range(len(postList)):
                 item=HipdaspyItem()
                 item['author']=authorList[i]
-                item['title']=postList[i]
+                item['title']=postList[i].encode('utf-8')
                 item['postTime']=dateList[i]
                 item['link']=linkList[i]
                 item['tid']=self.getUrlParm("tid",item['link'])
