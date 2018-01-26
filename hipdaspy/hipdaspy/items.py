@@ -16,6 +16,9 @@ class HipdaspyItem(scrapy.Item):
     postTime=scrapy.Field()
     link=scrapy.Field()
     tid=scrapy.Field()
+    click=scrapy.Field()
+    reply=scrapy.Field()
+    spyTime=scrapy.Field();
     pass
 
 

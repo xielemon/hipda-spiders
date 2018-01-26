@@ -10,6 +10,8 @@ from scrapy.utils.response import *
 from scrapy.utils.url import *
 import re
 import sys
+import time
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -18,20 +20,15 @@ class DmozSpider(CrawlSpider):
     # allowed_domains = ["dmoz.org"]
     start_urls = []
 
-    rules = (
 
-        # 提取匹配 'item.php' 的链接并使用spider的parse_item方法进行分析
-        Rule(LinkExtractor(allow=(r'http://www.hi-pda.com/forum/viewthread.php?tid=\d+')), callback='parse_item'),
-    )
 
     def __init__(self, *a, **kw):
         super(DmozSpider, self).__init__(*a, **kw)
         url="https://www.hi-pda.com/forum/forumdisplay.php?fid=2&page="
-        for i in range(500):
+        for i in range(1):
             self.start_urls.append(url+str(i))
 
         print "scrapylen:"+str(len(self.start_urls))
-
 
 
     #extract post name info
@@ -40,7 +37,10 @@ class DmozSpider(CrawlSpider):
         authorList=Selector(response).xpath('//*[starts-with(@id, "normalthread_")]/tr/td[3]/cite/a/text()').extract()
         dateList=Selector(response).xpath('//*[starts-with(@id, "normalthread_")]/tr/td[3]/em/text()').extract()
         linkList = Selector(response).xpath('//*[starts-with(@id, "normalthread_")]//*[starts-with(@id, "thread_")]/a/@href').extract()
+        replyList=Selector(response).xpath('//*[starts-with(@id, "normalthread_")]/tr/td[4]/strong/text()').extract()
+        clickList=Selector(response).xpath('//*[starts-with(@id, "normalthread_")]/tr/td[4]/em/text()').extract()
         res=[]
+        spytime=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
         if((len(postList)==len(authorList)) & (len(authorList)==len(dateList))):
             for i in range(len(postList)):
                 item=HipdaspyItem()
@@ -49,6 +49,9 @@ class DmozSpider(CrawlSpider):
                 item['postTime']=dateList[i]
                 item['link']=linkList[i]
                 item['tid']=self.getUrlParm("tid",item['link'])
+                item['click']=clickList[i]
+                item['reply']=replyList[i]
+                item['spyTime']=spytime
                 res.append(item)
         else:
             print "error author post date list lengeth mismatch"
@@ -93,25 +96,12 @@ class DmozSpider(CrawlSpider):
     def parse(self, response):
         res=self.parsePostList(response)
 
-        linkList=[]
-
         for item in res:
             link=item['link']
-            base_url=get_base_url(response)
-            linkList.append(urljoin_rfc(base_url,link))
             yield item
 
-        if(len(linkList)==0):
-            nextPageLink,cotentList=self.parsePostContent(response)
-            for item in cotentList:
-                yield item
-            if(nextPageLink!=0):
-                yield Request(nextPageLink)
 
 
-
-        for url in linkList:
-            yield Request(url)
 
 
 

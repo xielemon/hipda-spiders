@@ -18,7 +18,7 @@ class HipdaspyPipeline(object):
         'user': 'root',
         'password': 'root',
         'port': 3306,
-        'database': 'hipda2',
+        'database': 'hipda',
         'charset': 'utf8'
     }
     conn=0
@@ -38,8 +38,8 @@ class HipdaspyPipeline(object):
         if isinstance(item,HipdaspyItem):
             try:
                 cur=self.conn.cursor()
-                sql="insert into post_list (title,author,postTime,link,tid) VALUES (%s,%s,%s,%s,%s)"
-                map=(item['title'],item['author'],item['postTime'],item['link'],item['tid'])
+                sql="insert into post_list (title,author,postTime,link,tid,click,reply,spytime) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+                map=(item['title'],item['author'],item['postTime'],item['link'],item['tid'],item['click'],item['reply'],item['spyTime'])
                 cur.execute(sql,map)
                 #auto commit is off
                 self.conn.commit()
